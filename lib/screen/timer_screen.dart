@@ -101,7 +101,7 @@ class _TimerScreenState extends State<TimerScreen> {
 					),
 					NavigationDestination(
 						icon: Icon(Icons.av_timer),
-						label: 'StopUhr',
+						label: 'Stopp-Uhr',
 					),
 				],
 			),
