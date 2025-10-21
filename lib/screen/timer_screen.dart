@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'dart:io';
 import 'widgets/timer.dart';
-import 'widgets/stoppwatch.dart';
+import 'widgets/stopwatch.dart';
 
 
 
@@ -27,36 +29,57 @@ class _TimerScreenState extends State<TimerScreen> {
 		} else if (_selectedIndex == 1 && _stopwatchKey.currentState != null) {
 			needsConfirmation = _stopwatchKey.currentState!.isRunning;
 		}
-		if (index != _selectedIndex) {
-			if (needsConfirmation) {
-				final shouldSwitch = await showDialog<bool>(
-					context: context,
-					builder: (context) => AlertDialog(
-						title: const Text('Tab wechseln?'),
-						content: const Text('Der aktuelle Tab ist aktiv. Möchtest du wirklich wechseln?'),
-						actions: [
-							TextButton(
-								onPressed: () => Navigator.of(context).pop(false),
-								child: const Text('Nein'),
+			if (index != _selectedIndex) {
+				if (needsConfirmation) {
+					bool? shouldSwitch;
+					if (Platform.isIOS || Platform.isMacOS) {
+						shouldSwitch = await showCupertinoDialog<bool>(
+							context: context,
+							builder: (context) => CupertinoAlertDialog(
+								title: const Text('Tab wechseln?'),
+								content: const Text('Der aktuelle Tab ist aktiv. Möchtest du wirklich wechseln?'),
+								actions: [
+									CupertinoDialogAction(
+										onPressed: () => Navigator.of(context).pop(false),
+										child: const Text('Nein'),
+									),
+									CupertinoDialogAction(
+										onPressed: () => Navigator.of(context).pop(true),
+										child: const Text('Ja'),
+									),
+								],
 							),
-							TextButton(
-								onPressed: () => Navigator.of(context).pop(true),
-								child: const Text('Ja'),
+						);
+					} else {
+						shouldSwitch = await showDialog<bool>(
+							context: context,
+							builder: (context) => AlertDialog(
+								title: const Text('Tab wechseln?'),
+								content: const Text('Der aktuelle Tab ist aktiv. Möchtest du wirklich wechseln?'),
+								actions: [
+									TextButton(
+										onPressed: () => Navigator.of(context).pop(false),
+										child: const Text('Nein'),
+									),
+									TextButton(
+										onPressed: () => Navigator.of(context).pop(true),
+										child: const Text('Ja'),
+									),
+								],
 							),
-						],
-					),
-				);
-				if (shouldSwitch == true) {
+						);
+					}
+					if (shouldSwitch == true) {
+						setState(() {
+							_selectedIndex = index;
+						});
+					}
+				} else {
 					setState(() {
 						_selectedIndex = index;
 					});
 				}
-			} else {
-				setState(() {
-					_selectedIndex = index;
-				});
 			}
-		}
 	}
 	@override
 	Widget build(BuildContext context) {

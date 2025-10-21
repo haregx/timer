@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:timer/screen/widgets/fancy_snackbar.dart';
+import 'package:timer/screen/widgets/button3d.dart';
+import 'package:timer/screen/widgets/glass_card.dart';
+import 'package:timer/screen/widgets/ticker.dart';
+
 
 class TimerWidget extends StatefulWidget {
   
@@ -23,7 +28,7 @@ class TimerWidgetState extends State<TimerWidget> {
   late int _minutes;
   late int _seconds;
   bool showPicker = true;
-    Duration _startTime = Duration.zero;
+  Duration _startTime = Duration.zero;
   
 
   @override
@@ -51,7 +56,7 @@ class TimerWidgetState extends State<TimerWidget> {
 
 
 
-  void _onTick(Duration elapsed) {
+  void _onTick(Duration elapsed,) {
     if (isRunning && _remaining.inSeconds > 0) {
       if (mounted) {
         setState(() {
@@ -69,6 +74,12 @@ class TimerWidgetState extends State<TimerWidget> {
             showPicker = true; // Nach Ende wieder Anzeige
             _minutes = 0;
             _seconds = 0;
+            ScaffoldMessenger.of(context).showSnackBar(
+              FancySnackbar.build(
+                'Timer beendet!',
+                type: FancySnackbarType.info,
+              ),
+            );
           }
         });
       }
@@ -122,125 +133,95 @@ class TimerWidgetState extends State<TimerWidget> {
     } else {
       timerColor = Colors.black;
     }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          height: 160, // Feste Höhe für Anzeige und Picker
-          child: Center(
-            child: !showPicker
-                ? Text('$minutes:$seconds', style: TextStyle(fontSize: 64, fontFamily: 'Courier', color: timerColor))
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
+    return GlassCard(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 250, // Feste Höhe für Anzeige und Picker
+            child: Center(
+              child: !showPicker
+                  ? Text('$minutes:$seconds', style: TextStyle(fontSize: 64, fontFamily: 'Courier', color: timerColor, letterSpacing: -3.0))
+                  : GlassCard(
+                    margin: const EdgeInsets.all(32.0),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('Min'),
-                          SizedBox(
-                            height: 128,
-                            width: 80,
-                            child: CupertinoPicker(
-                              itemExtent: 64,
-                              scrollController: _minuteController,
-                              onSelectedItemChanged: (value) {
-                                setState(() {
-                                  _minutes = value;
-                                  _updateTimeFromFields();
-                                });
-                              },
-                              children: List<Widget>.generate(60, (i) => Center(child: Text(i.toString(), style: const TextStyle(fontSize: 32, fontFamily: 'Courier')))),
-                            ),
+                          Column(
+                            children: [
+                              const Text('Min'),
+                              SizedBox(
+                                height: 128,
+                                width: 80,
+                                child: CupertinoPicker(
+                                  looping: true,
+                                  itemExtent: 64,
+                                  scrollController: _minuteController,
+                                  onSelectedItemChanged: (value) {
+                                    setState(() {
+                                      _minutes = value;
+                                      _updateTimeFromFields();
+                                    });
+                                  },
+                                  children: List<Widget>.generate(60, (i) => Center(child: Text(i.toString(), style: const TextStyle(fontSize: 32, fontFamily: 'Courier')))),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 24),
+                          Column(
+                            children: [
+                              const Text('Sek'),
+                              SizedBox(
+                                height: 128,
+                                width: 80,
+                                child: CupertinoPicker(
+                                  looping: true,
+                                  itemExtent: 64,
+                                  scrollController: _secondController,
+                                  onSelectedItemChanged: (value) {
+                                    setState(() {
+                                      _seconds = value;
+                                      _updateTimeFromFields();
+                                    });
+                                  },
+                                  children: List<Widget>.generate(60, (i) => Center(child: Text(i.toString(), style: const TextStyle(fontSize: 32, fontFamily: 'Courier')))),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      const SizedBox(width: 24),
-                      Column(
-                        children: [
-                          const Text('Sek'),
-                          SizedBox(
-                            height: 128,
-                            width: 80,
-                            child: CupertinoPicker(
-                              itemExtent: 64,
-                              scrollController: _secondController,
-                              onSelectedItemChanged: (value) {
-                                setState(() {
-                                  _seconds = value;
-                                  _updateTimeFromFields();
-                                });
-                              },
-                              children: List<Widget>.generate(60, (i) => Center(child: Text(i.toString(), style: const TextStyle(fontSize: 32, fontFamily: 'Courier')))),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
+            ),
           ),
-        ),
-        const SizedBox(height: 32),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // start button
-            ElevatedButton(
-              onPressed: (!isRunning && (_minutes > 0 || _seconds > 0)) ? _startTimer : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                child: const Text('Start'),
+          const SizedBox(height: 32),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // start button
+              IntrinsicWidth(
+                child: Button3D(
+                  enabled: (!isRunning && (_minutes > 0 || _seconds > 0)),
+                  onPressed: _startTimer,
+                  label: 'Start',
+                  ),
               ),
-            ),
-            const SizedBox(height: 36),
-            // stop button
-            ElevatedButton(
-              onPressed: isRunning  ? _stopTimer : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                child: const Text('Stopp'),
-              ), 
-            ),
-          ],
-        ),
-      ],
+              const SizedBox(height: 36),
+              // stop button
+              IntrinsicWidth(
+                child: Button3D(
+                  enabled: isRunning,
+                  onPressed: _stopTimer,
+                  label: 'Stopp',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-class Ticker {
-  final void Function(Duration) onTick;
-  Duration _elapsed = Duration.zero;
-  bool _active = false;
-  late final Stopwatch _stopwatch;
-  Future<void>? _tickerFuture;
-
-  Ticker(this.onTick) {
-    _stopwatch = Stopwatch();
-  }
-
-  void start() {
-    if (_active) return;
-    _active = true;
-    _stopwatch.reset(); // Verstrichene Zeit auf 0 setzen
-    _stopwatch.start();
-    _tickerFuture ??= _tick();
-  }
-
-  void stop() {
-    _active = false;
-    _stopwatch.stop();
-    _tickerFuture = null;
-  }
-
-  void dispose() {
-    _active = false;
-    _stopwatch.stop();
-  }
-
-  Future<void> _tick() async {
-    while (_active) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      _elapsed = _stopwatch.elapsed;
-      onTick(_elapsed);
-    }
-  }
-}
