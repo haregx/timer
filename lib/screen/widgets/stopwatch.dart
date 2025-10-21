@@ -96,7 +96,7 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
           const SizedBox(height: 48),
           IntrinsicWidth(
             child: Button3D(
-              enabled: !isRunning,
+              enabled: !isRunning && _elapsed != Duration.zero,
               onPressed: _reset,
               label: 'Reset',
             ),
