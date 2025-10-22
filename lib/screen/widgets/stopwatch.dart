@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:timer/screen/widgets/button3d.dart';
-import 'package:timer/screen/widgets/glass_card.dart';
+import 'package:timer/widgets/button3d.dart';
+import 'package:timer/widgets/glass_card.dart';
 //import 'package:timer/screen/widgets/ticker.dart';
 
 /// Stopwatch Widget - Simple Stopwatch with Start, Stop, and Reset
@@ -120,7 +120,7 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (_splits.isNotEmpty) ...[
                 SizedBox(
@@ -156,17 +156,22 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
                 const SizedBox(height: 180),
               ],
               SizedBox(height: 16),
-              Text(
-                '$minutes:$seconds.$millis',
-                style: const TextStyle(
-                  fontSize: 64,
-                  fontFamily: 'Courier',
-                  letterSpacing: -5.0,
+              Center(
+                child: GlassCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  child: Text(
+                    '$minutes:$seconds.$millis',
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontFamily: 'Courier',
+                      letterSpacing: -5.0,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
               IntrinsicWidth(
-                stepWidth: 200,
+                stepWidth: 100,
                 stepHeight: 60,
                 child: Button3D(
                   enabled: true,

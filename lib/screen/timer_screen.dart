@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'widgets/timer.dart';
 import 'widgets/stopwatch.dart';
+import 'widgets/alarm.dart';
 
 
 /// TimerScreen - Main screen for Timer and Stopwatch
@@ -25,17 +26,19 @@ class _TimerScreenState extends State<TimerScreen> {
 	static final List<Widget> _screens = [
 		TimerWidget(key: _timerKey),
 		StopwatchWidget(key: _stopwatchKey),
+		const AlarmWidget(),
 	];
 
   /// Handles tab selection and manages state transitions.
   /// Prompts the user for confirmation if switching tabs while a timer or stopwatch is running.
   /// Updates the selected index to switch between Timer and Stopwatch screens.
+  /// 
 	void _onItemTapped(int index) async {
 		bool needsConfirmation = false;
 		if (_selectedIndex == 0 && _timerKey.currentState != null) {
-			needsConfirmation = _timerKey.currentState!.isRunning;
+			needsConfirmation = false; // _timerKey.currentState!.isRunning;
 		} else if (_selectedIndex == 1 && _stopwatchKey.currentState != null) {
-			needsConfirmation = _stopwatchKey.currentState!.isRunning;
+			needsConfirmation = false; // _stopwatchKey.currentState!.isRunning;
 		}
 			if (index != _selectedIndex) {
 				if (needsConfirmation) {
@@ -94,28 +97,46 @@ class _TimerScreenState extends State<TimerScreen> {
 	/// Displays the AppBar and the currently selected timer or stopwatch widget.
 	@override
 	Widget build(BuildContext context) {
-		return Scaffold(
-			appBar: AppBar(
-				title: Text(_selectedIndex == 0 ? 'Timer' : 'Stopp-Uhr'),
-			),
-			body: IndexedStack(
-				index: _selectedIndex,
-				children: _screens,
-			),
-			bottomNavigationBar: NavigationBar(
-				selectedIndex: _selectedIndex,
-				onDestinationSelected: _onItemTapped,
-				destinations: const <NavigationDestination>[
-					NavigationDestination(
-						icon: Icon(Icons.timer),
-						label: 'Timer',
-					),
-					NavigationDestination(
-						icon: Icon(Icons.av_timer),
-						label: 'Stopp-Uhr',
-					),
-				],
-			),
-		);
+			String appBarTitle;
+			switch (_selectedIndex) {
+				case 0:
+					appBarTitle = 'Timer';
+					break;
+				case 1:
+					appBarTitle = 'Stopp-Uhr';
+					break;
+				case 2:
+					appBarTitle = 'Alarm';
+					break;
+				default:
+					appBarTitle = '';
+			}
+			return Scaffold(
+				appBar: AppBar(
+					title: Text(appBarTitle),
+				),
+				body: IndexedStack(
+					index: _selectedIndex,
+					children: _screens,
+				),
+				bottomNavigationBar: NavigationBar(
+					selectedIndex: _selectedIndex,
+					onDestinationSelected: _onItemTapped,
+					destinations: const <NavigationDestination>[
+						NavigationDestination(
+							icon: Icon(Icons.timer),
+							label: 'Timer',
+						),
+						NavigationDestination(
+							icon: Icon(Icons.av_timer),
+							label: 'Stopp-Uhr',
+						),
+						NavigationDestination(
+							icon: Icon(Icons.alarm),
+							label: 'Alarm',
+						),
+					],
+				),
+			);
 	}
 }

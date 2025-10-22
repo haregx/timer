@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:timer/screen/widgets/fancy_snackbar.dart';
-import 'package:timer/screen/widgets/button3d.dart';
-import 'package:timer/screen/widgets/glass_card.dart';
+import 'package:timer/services/notification.dart';
+import 'package:timer/widgets/fancy_snackbar.dart';
+import 'package:timer/widgets/button3d.dart';
+import 'package:timer/widgets/glass_card.dart';
 //import 'package:timer/screen/widgets/ticker.dart';
 
 /// Timer Widget - Countdown Timer with Picker and Alerts
@@ -15,7 +16,7 @@ import 'package:timer/screen/widgets/glass_card.dart';
 /// - Alert sound and snackbar notification when the timer ends
 class TimerWidget extends StatefulWidget {
   const TimerWidget({
-    super.key, 
+    super.key,
     this.initialTime = const Duration(minutes: 5, seconds: 0),
   });
   final Duration initialTime;
@@ -26,7 +27,8 @@ class TimerWidget extends StatefulWidget {
 
 /// State class for TimerWidget
 /// Manages the timer logic, UI updates, and user interactions.
-class TimerWidgetState extends State<TimerWidget> {
+class TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver {
+  AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
   late FixedExtentScrollController _minuteController;
   late FixedExtentScrollController _secondController;
   late Duration _remaining;
@@ -36,16 +38,19 @@ class TimerWidgetState extends State<TimerWidget> {
   late int _seconds;
   bool showPicker = true;
   Duration _startTime = Duration.zero;
-  
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _remaining = widget.initialTime;
     _ticker = Ticker(_onTick);
     _minutes = widget.initialTime.inMinutes;
     _seconds = widget.initialTime.inSeconds % 60;
-    _startTime = Duration(minutes: _minutes, seconds: _seconds); // Startwert setzen
+    _startTime = Duration(
+      minutes: _minutes,
+      seconds: _seconds,
+    ); // Startwert setzen
     _minuteController = FixedExtentScrollController(initialItem: _minutes);
     _secondController = FixedExtentScrollController(initialItem: _seconds);
   }
@@ -67,35 +72,49 @@ class TimerWidgetState extends State<TimerWidget> {
     }
   }
 
-
+  
   /// Callback for ticker ticks
   /// Updates the remaining time based on the elapsed time.
-  void _onTick(Duration elapsed,) {
+  Future<void> _onTick(Duration elapsed) async {
     if (isRunning && _remaining.inSeconds > 0) {
       if (mounted) {
-        setState(() {
-          _remaining = _startTime - elapsed;
-          if (_remaining.inSeconds <= 0) {
-            _remaining = Duration.zero;
-            isRunning = false;
-            _ticker.stop();
-            // System-Sound abspielen
-            FlutterRingtonePlayer().playAlarm();
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _minuteController.jumpToItem(0);
-              _secondController.jumpToItem(0);
-            });
-            showPicker = true; // Nach Ende wieder Anzeige
+        final newRemaining = _startTime - elapsed;
+        if (newRemaining.inSeconds > 0) {
+          setState(() {
+            _remaining = newRemaining;
+          });
+        } else {
+          _remaining = Duration.zero;
+          isRunning = false;
+          _ticker.stop();
+          FlutterRingtonePlayer().playAlarm();
+          // TODO alert notification
+
+        /*  final now = DateTime.now().add(const Duration(seconds: 5));
+          final delayedTime = TimeOfDay(hour: now.hour, minute: now.minute);
+          scheduleAlarmNotification(context, delayedTime, 'Timer beendet', 'Der Timer für $_minutes:$_seconds ist abgelaufen.');
+*/
+          setState(() {
+            showPicker = true;
             _minutes = 0;
             _seconds = 0;
-            ScaffoldMessenger.of(context).showSnackBar(
-              FancySnackbar.build(
-                'Timer beendet!',
-                type: FancySnackbarType.info,
-              ),
-            );
-          }
-        });
+            // ...other state updates
+          });
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _minuteController.jumpToItem(0);
+            _secondController.jumpToItem(0);
+          });
+
+          final totalMinutes = _startTime.inMinutes.remainder(60).toString().padLeft(2, '0');
+          final totalSeconds = _startTime.inSeconds.remainder(60).toString().padLeft(2, '0');
+          ScaffoldMessenger.of(context).showSnackBar(
+            FancySnackbar.build(
+              'Timer beendet! Gesamtzeit: $totalMinutes:$totalSeconds',
+              type: FancySnackbarType.info,
+            ),
+          );
+        }
       }
     }
   }
@@ -103,19 +122,25 @@ class TimerWidgetState extends State<TimerWidget> {
   /// Starts the timer and updates the UI accordingly.
   /// This method is called when the user presses the start button.
   /// It initializes the ticker and starts the countdown.
-  void _startTimer() {
+  void _startTimer() async {
     if (!isRunning) {
       setState(() {
         showPicker = false; // Nach Start wieder Anzeige
         isRunning = true;
         Future.delayed(Duration(milliseconds: 500), _ticker.start);
+        debugPrint('(Re-)start timer)');
       });
+      if (mounted) {
+        final now = DateTime.now().add(_remaining);
+        final delayedTime = TimeOfDay(hour: now.hour, minute: now.minute);
+        await scheduleAlarmNotification(context, delayedTime, 'Timer beendet', 'Der Timer für $_minutes:$_seconds ist abgelaufen.');
+      }
     }
   }
 
   /// Stops the timer and updates the UI accordingly.
   /// This method is called when the user presses the stop button.
-  /// It halts the ticker and stops the countdown. 
+  /// It halts the ticker and stops the countdown.
   void _stopTimer() {
     if (isRunning) {
       setState(() {
@@ -139,10 +164,16 @@ class TimerWidgetState extends State<TimerWidget> {
   ///   - Disposes the ticker.
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _minuteController.dispose();
     _secondController.dispose();
     _ticker.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _appLifecycleState = state;
   }
 
   /// Builds the UI for the TimerWidget.
@@ -150,7 +181,7 @@ class TimerWidgetState extends State<TimerWidget> {
   /// The UI consists of a GlassCard containing:
   /// - A text display of the remaining time in minutes and seconds.
   /// - Cupertino pickers for selecting minutes and seconds when the timer is not running.
-  /// - Start and Stop buttons for controlling the timer. 
+  /// - Start and Stop buttons for controlling the timer.
   @override
   Widget build(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -164,100 +195,180 @@ class TimerWidgetState extends State<TimerWidget> {
     } else {
       timerColor = Colors.black;
     }
+    final isStartEnabled = (_minutes > 0 || _seconds > 0) && !isRunning;
     return GlassCard(
-       padding: const EdgeInsets.all(32.0),
+      padding: const EdgeInsets.all(32.0),
       margin: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          SizedBox(
-            height: 250, // Feste Höhe für Anzeige und Picker
-            child: Center(
-              child: !showPicker
-                  ? Text('$minutes:$seconds', style: TextStyle(fontSize: 64, fontFamily: 'Courier', color: timerColor, letterSpacing: -5.0))
-                  : GlassCard(
-                    margin: const EdgeInsets.all(32.0),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Column(
-                            children: [
-                              const Text('Min'),
-                              SizedBox(
-                                height: 128,
-                                width: 80,
-                                child: CupertinoPicker(
-                                  looping: true,
-                                  itemExtent: 64,
-                                  scrollController: _minuteController,
-                                  onSelectedItemChanged: (value) {
-                                    setState(() {
-                                      _minutes = value;
-                                      _updateTimeFromFields();
-                                    });
-                                  },
-                                  children: List<Widget>.generate(60, (i) => Center(child: Text(i.toString(), style: const TextStyle(fontSize: 32, fontFamily: 'Courier')))),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 24),
-                          Column(
-                            children: [
-                              const Text('Sek'),
-                              SizedBox(
-                                height: 128,
-                                width: 80,
-                                child: CupertinoPicker(
-                                  looping: true,
-                                  itemExtent: 64,
-                                  scrollController: _secondController,
-                                  onSelectedItemChanged: (value) {
-                                    setState(() {
-                                      _seconds = value;
-                                      _updateTimeFromFields();
-                                    });
-                                  },
-                                  children: List<Widget>.generate(60, (i) => Center(child: Text(i.toString(), style: const TextStyle(fontSize: 32, fontFamily: 'Courier')))),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                  ),
-            ),
-          ),
-          const SizedBox(height: 32),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // start button
-              IntrinsicWidth(
-                stepWidth: 200,
-                stepHeight: 60,
-                child: Button3D(
-                  enabled: true, // (!isRunning && (_minutes > 0 || _seconds > 0)),
-                  onPressed: isRunning ? _stopTimer : _startTimer,
-                  label: isRunning ? 'Stopp' : 'Start',
+              SizedBox(
+                height: 190,
+                child: Center(
+                  child: !showPicker
+                      ? GlassCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                          child: Text(
+                            '$minutes:$seconds',
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontFamily: 'Courier',
+                              color: timerColor,
+                              letterSpacing: -5.0,
+                            ),
+                          ),
+                        )
+                      : GlassCard(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Column(
+                                children: [
+                                  const Text('Min'),
+                                  SizedBox(
+                                    height: 128,
+                                    width: 80,
+                                    child: CupertinoPicker(
+                                      looping: true,
+                                      itemExtent: 64,
+                                      scrollController: _minuteController,
+                                      onSelectedItemChanged: (value) {
+                                        setState(() {
+                                          _minutes = value;
+                                          _updateTimeFromFields();
+                                        });
+                                      },
+                                      children: List<Widget>.generate(
+                                        60,
+                                        (i) => Center(
+                                          child: Text(
+                                            i.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              fontFamily: 'Courier',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 24),
+                              Column(
+                                children: [
+                                  const Text('Sek'),
+                                  SizedBox(
+                                    height: 128,
+                                    width: 80,
+                                    child: CupertinoPicker(
+                                      looping: true,
+                                      itemExtent: 64,
+                                      scrollController: _secondController,
+                                      onSelectedItemChanged: (value) {
+                                        setState(() {
+                                          _seconds = value;
+                                          _updateTimeFromFields();
+                                        });
+                                      },
+                                      children: List<Widget>.generate(
+                                        60,
+                                        (i) => Center(
+                                          child: Text(
+                                            i.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              fontFamily: 'Courier',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                 ),
               ),
-/*              const SizedBox(height: 36),
-              // stop button
-              IntrinsicWidth(
-                child: Button3D(
-                  enabled: isRunning,
-                  onPressed: _stopTimer,
-                  label: 'Stopp',
-                ),
+              const SizedBox(height: 32),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  IntrinsicWidth(
+                    stepHeight: 60,
+                    child: Button3D(
+                      enabled: isRunning ? true : isStartEnabled,
+                      onPressed: isRunning ? _stopTimer : (isStartEnabled ? _startTimer : null),
+                      label: isRunning ? 'Stopp' : 'Start',
+                    ),
+                  ),
+                ],
               ),
-              */
             ],
           ),
+          if (isRunning)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Button3D(
+                    label: '+1m',
+                    onPressed: (_remaining.inSeconds + 60 <= 3599)
+                        ? () {
+                            setState(() {
+                              _startTime += const Duration(minutes: 1);
+                              _remaining += const Duration(minutes: 1);
+                            });
+                          }
+                        : null,
+                    paddingHorizontal: 12,
+                    enabled: (_remaining.inSeconds + 60 <= 3599),
+                    isSecondary: true,
+                  ),
+                  const SizedBox(width: 8),
+                  Button3D(
+                    label: '+5m',
+                    onPressed: (_remaining.inSeconds + 300 <= 3599)
+                        ? () {
+                            setState(() {
+                              _startTime += const Duration(minutes: 5);
+                              _remaining += const Duration(minutes: 5);
+                            });
+                          }
+                        : null,
+                    paddingHorizontal: 12,
+                    enabled: (_remaining.inSeconds + 300 <= 3599),
+                    isSecondary: true,
+                  ),
+                  const SizedBox(width: 8),
+                  Button3D(
+                    label: '+10m',
+                    onPressed: (_remaining.inSeconds + 600 <= 3599)
+                        ? () {
+                            setState(() {
+                              _startTime += const Duration(minutes: 10);
+                              _remaining += const Duration(minutes: 10);
+                            });
+                          }
+                        : null,
+                    paddingHorizontal: 12,
+                    enabled: (_remaining.inSeconds + 600 <= 3599),
+                    isSecondary: true,
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
 }
-

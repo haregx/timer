@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
-import 'package:timer/screen/widgets/platform_constants.dart';
+import 'package:timer/widgets/platform_constants.dart';
 
 
 /// Glass Card Widget - Simple glassmorphism-styled card component
