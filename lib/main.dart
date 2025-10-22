@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'screen/timer_screen.dart';
 
+/// Entry point of the Timer application.
+/// Initializes and runs the main application widget. 
 void main() {
   runApp(const MyApp());
 }
 
+/// Main Application Widget - Timer App
+/// Sets up the MaterialApp with theme and home screen. 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -12,9 +16,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Timer',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
       home: const TimerScreen(),
     );

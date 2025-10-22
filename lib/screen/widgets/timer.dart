@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:timer/screen/widgets/fancy_snackbar.dart';
 import 'package:timer/screen/widgets/button3d.dart';
 import 'package:timer/screen/widgets/glass_card.dart';
-import 'package:timer/screen/widgets/ticker.dart';
+//import 'package:timer/screen/widgets/ticker.dart';
 
-
+/// Timer Widget - Countdown Timer with Picker and Alerts
+/// Provides a countdown timer with:
+/// - Time selection via Cupertino pickers for minutes and seconds
+/// - Start and stop controls with 3D-styled buttons
+/// - Visual countdown display with color changes based on remaining time
+/// - Alert sound and snackbar notification when the timer ends
 class TimerWidget extends StatefulWidget {
-  
   const TimerWidget({
     super.key, 
     this.initialTime = const Duration(minutes: 5, seconds: 0),
@@ -19,6 +24,8 @@ class TimerWidget extends StatefulWidget {
   State<TimerWidget> createState() => TimerWidgetState();
 }
 
+/// State class for TimerWidget
+/// Manages the timer logic, UI updates, and user interactions.
 class TimerWidgetState extends State<TimerWidget> {
   late FixedExtentScrollController _minuteController;
   late FixedExtentScrollController _secondController;
@@ -43,6 +50,12 @@ class TimerWidgetState extends State<TimerWidget> {
     _secondController = FixedExtentScrollController(initialItem: _seconds);
   }
 
+  /// Updates the start time and remaining time based on the selected minutes and seconds.
+  /// This method is called when the user changes the picker values.
+  /// It ensures that the timer reflects the user's input.
+  /// If the timer is not running, it updates the start time and remaining time.
+  /// This method is called when the user changes the picker values.
+  /// It ensures that the timer reflects the user's input.
   void _updateTimeFromFields() {
     if (!isRunning) {
       if (mounted) {
@@ -55,7 +68,8 @@ class TimerWidgetState extends State<TimerWidget> {
   }
 
 
-
+  /// Callback for ticker ticks
+  /// Updates the remaining time based on the elapsed time.
   void _onTick(Duration elapsed,) {
     if (isRunning && _remaining.inSeconds > 0) {
       if (mounted) {
@@ -86,6 +100,9 @@ class TimerWidgetState extends State<TimerWidget> {
     }
   }
 
+  /// Starts the timer and updates the UI accordingly.
+  /// This method is called when the user presses the start button.
+  /// It initializes the ticker and starts the countdown.
   void _startTimer() {
     if (!isRunning) {
       setState(() {
@@ -96,6 +113,9 @@ class TimerWidgetState extends State<TimerWidget> {
     }
   }
 
+  /// Stops the timer and updates the UI accordingly.
+  /// This method is called when the user presses the stop button.
+  /// It halts the ticker and stops the countdown. 
   void _stopTimer() {
     if (isRunning) {
       setState(() {
@@ -112,6 +132,11 @@ class TimerWidgetState extends State<TimerWidget> {
     }
   }
 
+  /// Disposes the controllers and ticker.
+  /// This method is called when the widget is removed from the widget tree.
+  /// It ensures that all resources are released properly.
+  ///   - Disposes the minute and second controllers.
+  ///   - Disposes the ticker.
   @override
   void dispose() {
     _minuteController.dispose();
@@ -120,6 +145,12 @@ class TimerWidgetState extends State<TimerWidget> {
     super.dispose();
   }
 
+  /// Builds the UI for the TimerWidget.
+  /// Displays the countdown timer, pickers, and control buttons.
+  /// The UI consists of a GlassCard containing:
+  /// - A text display of the remaining time in minutes and seconds.
+  /// - Cupertino pickers for selecting minutes and seconds when the timer is not running.
+  /// - Start and Stop buttons for controlling the timer. 
   @override
   Widget build(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -134,6 +165,8 @@ class TimerWidgetState extends State<TimerWidget> {
       timerColor = Colors.black;
     }
     return GlassCard(
+       padding: const EdgeInsets.all(32.0),
+      margin: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -141,7 +174,7 @@ class TimerWidgetState extends State<TimerWidget> {
             height: 250, // Feste Höhe für Anzeige und Picker
             child: Center(
               child: !showPicker
-                  ? Text('$minutes:$seconds', style: TextStyle(fontSize: 64, fontFamily: 'Courier', color: timerColor, letterSpacing: -3.0))
+                  ? Text('$minutes:$seconds', style: TextStyle(fontSize: 64, fontFamily: 'Courier', color: timerColor, letterSpacing: -5.0))
                   : GlassCard(
                     margin: const EdgeInsets.all(32.0),
                     padding: const EdgeInsets.all(16.0),
@@ -202,13 +235,15 @@ class TimerWidgetState extends State<TimerWidget> {
             children: [
               // start button
               IntrinsicWidth(
+                stepWidth: 200,
+                stepHeight: 60,
                 child: Button3D(
-                  enabled: (!isRunning && (_minutes > 0 || _seconds > 0)),
-                  onPressed: _startTimer,
-                  label: 'Start',
-                  ),
+                  enabled: true, // (!isRunning && (_minutes > 0 || _seconds > 0)),
+                  onPressed: isRunning ? _stopTimer : _startTimer,
+                  label: isRunning ? 'Stopp' : 'Start',
+                ),
               ),
-              const SizedBox(height: 36),
+/*              const SizedBox(height: 36),
               // stop button
               IntrinsicWidth(
                 child: Button3D(
@@ -217,6 +252,7 @@ class TimerWidgetState extends State<TimerWidget> {
                   label: 'Stopp',
                 ),
               ),
+              */
             ],
           ),
         ],

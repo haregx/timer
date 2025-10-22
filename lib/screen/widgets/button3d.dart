@@ -12,6 +12,10 @@ import 'package:timer/screen/widgets/platform_constants.dart';
 /// A 3D-styled customizable button for primary actions.
 /// Supports enabled/disabled state, platform-adaptive border radius and colors.
 class Button3D extends StatefulWidget {
+  /// Ob der Button als Alert (rot) dargestellt wird.
+  final bool isAlert;
+  /// Optionaler Abstand zwischen Icon und Text.
+  final double? iconTextSpacing;
   // Primary color scheme (matches previous defaults)
   static const List<Color> _primaryColorGradient = [
     Color.fromARGB(255, 30, 70, 161),  // darker blue bottom
@@ -84,14 +88,23 @@ class Button3D extends StatefulWidget {
     this.textStyle,
     this.paddingHorizontal = 32,
     this.onPressed,
-    //  this.colorGradient = const [ Color(0xFF64B5F6), Color(0xFF1976D2)], // Blau-Gradient
-    //  this.shadowColor = const Color(0x803197C9), // Blauer Schatten
-    //  this.innerColorGradient = const [ Color(0x7FBBDEFB), Color(0x003197C9)], // Helles Blau innen
     this.enabled = true,
     this.leadingIcon,
     this.trailingIcon,
     this.isSecondary = false,
+    this.isAlert = false,
+    this.iconTextSpacing,
   }) : borderRadius = borderRadius ?? PlatformConstants.buttonBorderRadius;
+  // Alert-Farbverlauf (rot)
+  static const List<Color> _alertColorGradient = [
+    Color(0xFFD32F2F), // Rot oben
+    Color(0xFFB71C1C), // Rot unten
+  ];
+  static const Color _alertShadowColor = Color(0x40D32F2F);
+  static const List<Color> _alertInnerColorGradient = [
+    Color(0x33FFCDD2),
+    Color(0x00FFCDD2),
+  ];
 
   @override
   State<Button3D> createState() => _Button3DState();
@@ -101,6 +114,9 @@ class Button3D extends StatefulWidget {
 class _Button3DState extends State<Button3D> {
   /// Returns the platform-conform spacing between icon and text.
   double _iconTextSpacing() {
+    if (widget.iconTextSpacing != null) {
+      return widget.iconTextSpacing!;
+    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
@@ -147,9 +163,14 @@ class _Button3DState extends State<Button3D> {
       }
     }
     // Slightly darken when pressed
-    final colors = widget.isSecondary
-        ? Button3D._secondaryColorGradient
-        : Button3D._primaryColorGradient;
+    List<Color> colors;
+    if (widget.isAlert) {
+      colors = Button3D._alertColorGradient;
+    } else if (widget.isSecondary) {
+      colors = Button3D._secondaryColorGradient;
+    } else {
+      colors = Button3D._primaryColorGradient;
+    }
     return _pressed ? colors.map((c) => _darken(c, 0.10)).toList() : colors;
   }
 
@@ -164,9 +185,14 @@ class _Button3DState extends State<Button3D> {
         return [Colors.grey.shade100, Colors.grey.shade400.withAlpha(0)];
       }
     }
-    final colors = widget.isSecondary
-        ? Button3D._secondaryInnerColorGradient
-        : Button3D._primaryInnerColorGradient;
+    List<Color> colors;
+    if (widget.isAlert) {
+      colors = Button3D._alertInnerColorGradient;
+    } else if (widget.isSecondary) {
+      colors = Button3D._secondaryInnerColorGradient;
+    } else {
+      colors = Button3D._primaryInnerColorGradient;
+    }
     return _pressed ? colors.map((c) => _darken(c, 0.08)).toList() : colors;
   }
 
@@ -182,9 +208,14 @@ class _Button3DState extends State<Button3D> {
         return Colors.grey.shade300.withAlpha(32);
       }
     }
-    final color = widget.isSecondary
-        ? Button3D._secondaryShadowColor
-        : Button3D._primaryShadowColor;
+    Color color;
+    if (widget.isAlert) {
+      color = Button3D._alertShadowColor;
+    } else if (widget.isSecondary) {
+      color = Button3D._secondaryShadowColor;
+    } else {
+      color = Button3D._primaryShadowColor;
+    }
     return _pressed ? _darken(color, 0.15) : color;
   }
 
