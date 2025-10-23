@@ -5,43 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:timer/widgets/platform_constants.dart';
 
+enum FancyButtonColor { blue, red, green, grey, orange }
 
 /// A 3D-styled button for primary actions, with gradient, shadow, and customizable text.
 // Stateless widget for a 3D-styled common button.
 
 /// A 3D-styled customizable button for primary actions.
 /// Supports enabled/disabled state, platform-adaptive border radius and colors.
-class Button3D extends StatefulWidget {
+class FancyButton extends StatefulWidget {
+  
   /// Ob der Button als Alert (rot) dargestellt wird.
-  final bool isAlert;
+  final FancyButtonColor backgroundColor;
   /// Optionaler Abstand zwischen Icon und Text.
   final double? iconTextSpacing;
-  // Primary color scheme (matches previous defaults)
-  static const List<Color> _primaryColorGradient = [
-    Color.fromARGB(255, 30, 70, 161),  // darker blue bottom
-    Color.fromARGB(255, 45, 97, 201),  // darker blue top
-
-  ];
-  static const Color _primaryShadowColor = Color.fromARGB(64, 73, 135, 251);
-  static const List<Color> _primaryInnerColorGradient = [
-  
-    Color.fromARGB(0, 40, 91, 202),
-    Color.fromARGB(126, 80, 150, 204),
-  ];
-
-  // Secondary color scheme (matches SecondaryButton3D)
-  // Secondary: less 3D, lighter shadow, softer gradient
-  // Slightly darker for light mode
-  static const List<Color> _secondaryColorGradient = [
-    Color(0xFFB0B0B0), // darker gray top
-    Color(0xFF888888), // even darker gray bottom
-  ];
-  static const Color _secondaryShadowColor = Color(0x20202020); // much lighter shadow
-  static const List<Color> _secondaryInnerColorGradient = [
-    Color(0x33FFFFFF),
-    Color(0x00FFFFFF),
-  ];
-
   /// Optional leading icon (left of text).
   final IconData? leadingIcon;
 
@@ -76,11 +52,8 @@ class Button3D extends StatefulWidget {
   /// Whether the button is enabled (default: true).
   final bool enabled;
 
-  /// Whether the button uses the secondary color scheme (default: false).
-  final bool isSecondary;
-
   /// Creates a 3D-styled button with platform-adaptive border radius and disabled state.
-  Button3D({
+  FancyButton({
     super.key,
     required this.label,
     this.height,
@@ -91,27 +64,70 @@ class Button3D extends StatefulWidget {
     this.enabled = true,
     this.leadingIcon,
     this.trailingIcon,
-    this.isSecondary = false,
-    this.isAlert = false,
+    this.backgroundColor = FancyButtonColor.blue,
     this.iconTextSpacing,
   }) : borderRadius = borderRadius ?? PlatformConstants.buttonBorderRadius;
-  // Alert-Farbverlauf (rot)
-  static const List<Color> _alertColorGradient = [
-    Color(0xFFD32F2F), // Rot oben
-    Color(0xFFB71C1C), // Rot unten
+  // Blue type
+  static const List<Color> _blueGradient = [
+    Color.fromARGB(255, 30, 70, 161),
+    Color.fromARGB(255, 45, 97, 201),
   ];
-  static const Color _alertShadowColor = Color(0x40D32F2F);
-  static const List<Color> _alertInnerColorGradient = [
+  static const Color _blueShadow = Color.fromARGB(64, 73, 135, 251);
+  static const List<Color> _blueInnerGradient = [
+    Color.fromARGB(0, 40, 91, 202),
+    Color.fromARGB(126, 80, 150, 204),
+  ];
+
+  // Red type
+  static const List<Color> _redGradient = [
+    Color(0xFFD32F2F),
+    Color(0xFFB71C1C),
+  ];
+  static const Color _redShadow = Color(0x40D32F2F);
+  static const List<Color> _redInnerGradient = [
     Color(0x33FFCDD2),
     Color(0x00FFCDD2),
   ];
 
+  // Orange type
+  static const List<Color> _orangeGradient = [
+    Color(0xFFFF9800),
+    Color(0xFFF57C00),
+  ];
+  static const Color _orangeShadow = Color(0x40FF9800);
+  static const List<Color> _orangeInnerGradient = [
+    Color(0x33FFD180),
+    Color(0x00FFD180),
+  ];
+
+  // Green type
+  static const List<Color> _greenGradient = [
+    Color(0xFF388E3C),
+    Color(0xFF2E7D32),
+  ];
+  static const Color _greenShadow = Color(0x40388E3C);
+  static const List<Color> _greenInnerGradient = [
+    Color(0x3328A745),
+    Color(0x0028A745),
+  ];
+
+  // Grey type
+  static const List<Color> _greyGradient = [
+    Color(0xFFB0B0B0),
+    Color(0xFF888888),
+  ];
+  static const Color _greyShadow = Color(0x20202020);
+  static const List<Color> _greyInnerGradient = [
+    Color(0x33FFFFFF),
+    Color(0x00FFFFFF),
+  ];
+
   @override
-  State<Button3D> createState() => _Button3DState();
+  State<FancyButton> createState() => _FancyButtonState();
 }
 
 /// State for PrimaryButton3D, manages pressed and disabled visuals.
-class _Button3DState extends State<Button3D> {
+class _FancyButtonState extends State<FancyButton> {
   /// Returns the platform-conform spacing between icon and text.
   double _iconTextSpacing() {
     if (widget.iconTextSpacing != null) {
@@ -163,15 +179,18 @@ class _Button3DState extends State<Button3D> {
       }
     }
     // Slightly darken when pressed
-    List<Color> colors;
-    if (widget.isAlert) {
-      colors = Button3D._alertColorGradient;
-    } else if (widget.isSecondary) {
-      colors = Button3D._secondaryColorGradient;
-    } else {
-      colors = Button3D._primaryColorGradient;
+    switch (widget.backgroundColor) {
+      case FancyButtonColor.red:
+        return FancyButton._redGradient.map((c) => _pressed ? _darken(c, 0.10) : c).toList();
+      case FancyButtonColor.green:
+        return FancyButton._greenGradient.map((c) => _pressed ? _darken(c, 0.10) : c).toList();
+      case FancyButtonColor.grey:
+        return FancyButton._greyGradient.map((c) => _pressed ? _darken(c, 0.10) : c).toList();
+      case FancyButtonColor.blue:
+        return FancyButton._blueGradient.map((c) => _pressed ? _darken(c, 0.10) : c).toList();
+      case FancyButtonColor.orange:
+        return FancyButton._orangeGradient.map((c) => _pressed ? _darken(c, 0.10) : c).toList();
     }
-    return _pressed ? colors.map((c) => _darken(c, 0.10)).toList() : colors;
   }
 
   /// Returns the inner vertical gradient overlay colors depending on state and platform.
@@ -185,15 +204,18 @@ class _Button3DState extends State<Button3D> {
         return [Colors.grey.shade100, Colors.grey.shade400.withAlpha(0)];
       }
     }
-    List<Color> colors;
-    if (widget.isAlert) {
-      colors = Button3D._alertInnerColorGradient;
-    } else if (widget.isSecondary) {
-      colors = Button3D._secondaryInnerColorGradient;
-    } else {
-      colors = Button3D._primaryInnerColorGradient;
+    switch (widget.backgroundColor) {
+      case FancyButtonColor.red:
+        return FancyButton._redInnerGradient.map((c) => _pressed ? _darken(c, 0.08) : c).toList();
+      case FancyButtonColor.green:
+        return FancyButton._greenInnerGradient.map((c) => _pressed ? _darken(c, 0.08) : c).toList();
+      case FancyButtonColor.grey:
+        return FancyButton._greyInnerGradient.map((c) => _pressed ? _darken(c, 0.08) : c).toList();
+      case FancyButtonColor.blue:
+        return FancyButton._blueInnerGradient.map((c) => _pressed ? _darken(c, 0.08) : c).toList();
+      case FancyButtonColor.orange:
+        return FancyButton._orangeInnerGradient.map((c) => _pressed ? _darken(c, 0.08) : c).toList();
     }
-    return _pressed ? colors.map((c) => _darken(c, 0.08)).toList() : colors;
   }
 
   /// Returns the shadow color depending on state and platform.
@@ -208,15 +230,18 @@ class _Button3DState extends State<Button3D> {
         return Colors.grey.shade300.withAlpha(32);
       }
     }
-    Color color;
-    if (widget.isAlert) {
-      color = Button3D._alertShadowColor;
-    } else if (widget.isSecondary) {
-      color = Button3D._secondaryShadowColor;
-    } else {
-      color = Button3D._primaryShadowColor;
+    switch (widget.backgroundColor) {
+      case FancyButtonColor.red:
+        return _pressed ? _darken(FancyButton._redShadow, 0.15) : FancyButton._redShadow;
+      case FancyButtonColor.green:
+        return _pressed ? _darken(FancyButton._greenShadow, 0.15) : FancyButton._greenShadow;
+      case FancyButtonColor.grey:
+        return _pressed ? _darken(FancyButton._greyShadow, 0.15) : FancyButton._greyShadow;
+      case FancyButtonColor.blue:
+        return _pressed ? _darken(FancyButton._blueShadow, 0.15) : FancyButton._blueShadow;
+      case FancyButtonColor.orange:
+        return _pressed ? _darken(FancyButton._orangeShadow, 0.15) : FancyButton._orangeShadow;
     }
-    return _pressed ? _darken(color, 0.15) : color;
   }
 
   /// Utility to darken a color by a given amount (0-1).
@@ -231,7 +256,6 @@ class _Button3DState extends State<Button3D> {
   @override
   Widget build(BuildContext context) {
     final bool isDisabled = !widget.enabled;
-    final bool isSecondary = widget.isSecondary;
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(widget.borderRadius),
@@ -257,32 +281,24 @@ class _Button3DState extends State<Button3D> {
                       colors: _currentColors,
                       stops: const [0.0, 1.0],
                     )
-                  : isSecondary
-                      ? LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: _currentColors,
-                          stops: const [0.0, 1.0],
-                        )
-                      : RadialGradient(
-                          center: const Alignment(0.7, -0.2),
-                          radius: 1.2,
-                          colors: _currentColors,
-                          stops: const [0.0, 1.0],
-                        ),
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: _currentColors,
+                      stops: const [0.0, 1.0],
+                    ),
               boxShadow: [
                 BoxShadow(
                   color: _currentShadowColor,
-                  blurRadius: isDisabled ? 2 : (isSecondary ? 6 : 15),
-                  offset: Offset(0, isDisabled ? 1 : (isSecondary ? 4 : 10)),
+                  blurRadius: isDisabled ? 2 : 15,
+                  offset: Offset(0, isDisabled ? 1 : 10),
                 ),
-                if (!isSecondary && !isDisabled)
-                  BoxShadow(
-                    color: Colors.white.withAlpha(128),
-                    blurRadius: 4,
-                    offset: Offset(0, -1),
-                    spreadRadius: -2,
-                  ),
+                BoxShadow(
+                  color: Colors.white.withAlpha(128),
+                  blurRadius: 4,
+                  offset: Offset(0, -1),
+                  spreadRadius: -2,
+                ),
               ],
             ),
             child: Container(
@@ -311,8 +327,7 @@ class _Button3DState extends State<Button3D> {
                           color: isDisabled
                               ? (defaultTargetPlatform == TargetPlatform.iOS
                                     ? const Color(0xFFAEAEB2)
-                                    : defaultTargetPlatform ==
-                                          TargetPlatform.android
+                                    : defaultTargetPlatform == TargetPlatform.android
                                     ? const Color(0xFF424242)
                                     : Colors.grey.shade600)
                               : (widget.textStyle?.color ?? Colors.white),
@@ -346,8 +361,7 @@ class _Button3DState extends State<Button3D> {
                           color: isDisabled
                               ? (defaultTargetPlatform == TargetPlatform.iOS
                                     ? const Color(0xFFAEAEB2)
-                                    : defaultTargetPlatform ==
-                                          TargetPlatform.android
+                                    : defaultTargetPlatform == TargetPlatform.android
                                     ? const Color(0xFF424242)
                                     : Colors.grey.shade600)
                               : (widget.textStyle?.color ?? Colors.white),

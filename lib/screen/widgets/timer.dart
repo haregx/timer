@@ -4,8 +4,8 @@ import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:timer/services/notification.dart';
 import 'package:timer/widgets/fancy_snackbar.dart';
-import 'package:timer/widgets/button3d.dart';
-import 'package:timer/widgets/glass_card.dart';
+import 'package:timer/widgets/fancy_button.dart';
+import 'package:timer/widgets/fancy_glasscard.dart';
 import 'package:timer/widgets/fancy_picker.dart';
 //import 'package:timer/screen/widgets/ticker.dart';
 
@@ -242,7 +242,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
       }
     }
     final isStartEnabled = (_hours > 0 || _minutes > 0 || _seconds > 0) && !isRunning;
-    return GlassCard(
+    return FancyGlassCard(
       padding: const EdgeInsets.all(32.0),
       margin: const EdgeInsets.all(16.0),
       child: Stack(
@@ -254,7 +254,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                 height: 190,
                 child: Center(
                   child: !showPicker
-                      ? GlassCard(
+                      ? FancyGlassCard(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                           child: shouldBlink
                               ? FadeTransition(
@@ -279,7 +279,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                                   ),
                                 ),
                         )
-                      : GlassCard(
+                      : FancyGlassCard(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -317,8 +317,8 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                   IntrinsicWidth(
                     stepHeight: 60,
                     stepWidth: 60,
-                    child: Button3D(
-                      isAlert: isRunning ? true : false,
+                    child: FancyButton(
+                      backgroundColor: isRunning ? FancyButtonColor.red : FancyButtonColor.green,
                       leadingIcon: isRunning ? Icons.stop : Icons.play_arrow,
                       enabled: isRunning ? true : isStartEnabled,
                       onPressed: isRunning ? _stopTimer : (isStartEnabled ? _startTimer : null),
@@ -331,12 +331,14 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
               ),
             ],
           ),
-          if (isRunning)
+          if (isRunning)...[
             Positioned(
               bottom: 0,
+              left: 0,
               right: 0,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 8,
                 children: List.generate(4, (i) {
                   final labels = ['+1m', '+10m', '+1h', '12h'];
@@ -350,7 +352,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                   final canAdd = (_remaining.inSeconds + increments[i] < 86400); // 86400 seconds in a day
                   return Row(
                     children: [
-                      Button3D(
+                      FancyButton(
                         label: labels[i],
                         onPressed: canAdd
                             ? () {
@@ -362,14 +364,57 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                             : null,
                         paddingHorizontal: 12,
                         enabled: canAdd,
-                        isSecondary: true,
+                        backgroundColor: FancyButtonColor.grey,
                       ),
-                      
                     ],
                   );
                 }),
               ),
             ),
+          ]
+          else...[ // Buttons für 1m, 10m, 60m, 12h setzen
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 8,
+                children: List.generate(4, (i) {
+                  final labels = ['1m', '10m', '1h', '12h'];
+                  final durations = [
+                    const Duration(minutes: 1),
+                    const Duration(minutes: 10),
+                    const Duration(hours: 1),
+                    const Duration(hours: 12),
+                  ];
+                  final d = durations[i];
+                  return Row(
+                    children: [
+                      FancyButton(
+                        label: labels[i],
+                        onPressed: () {
+                          setState(() {
+                            _hours = d.inHours;
+                            _minutes = d.inMinutes % 60;
+                            _seconds = d.inSeconds % 60;
+                            _updateTimeFromFields();
+                            _hourController.jumpToItem(_hours);
+                            _minuteController.jumpToItem(_minutes);
+                            _secondController.jumpToItem(_seconds);
+                          });
+                        },
+                        paddingHorizontal: 12,
+                        backgroundColor: FancyButtonColor.grey,
+                      ),
+                      if (i < 3) const SizedBox(width: 8),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ]
         ],
       ),
     );

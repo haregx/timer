@@ -1,12 +1,12 @@
 import 'package:timer/services/notification.dart';
 import 'package:flutter/material.dart';
-import 'package:timer/widgets/button3d.dart';
+import 'package:timer/widgets/fancy_button.dart';
 import 'package:timer/widgets/fancy_snackbar.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 
 import 'dart:async';
 
-import 'package:timer/widgets/glass_card.dart';
+import 'package:timer/widgets/fancy_glasscard.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:timer/widgets/fancy_picker.dart';
@@ -114,7 +114,7 @@ class _AlarmWidgetState extends State<AlarmWidget> {
               const SizedBox(height: 24),
               SizedBox(
                 height: 220,
-                child: GlassCard(
+                child: FancyGlassCard(
                   margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Row(
@@ -191,7 +191,7 @@ class _AlarmWidgetState extends State<AlarmWidget> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: GlassCard(
+      child: FancyGlassCard(
         padding: const EdgeInsets.all(32.0),
         margin: const EdgeInsets.all(16.0),
         child: Stack(
@@ -217,11 +217,11 @@ class _AlarmWidgetState extends State<AlarmWidget> {
                 IntrinsicWidth(
                   stepHeight: 60,
                   stepWidth: 60,
-                  child: Button3D(
+                  child: FancyButton(
                     leadingIcon: _alarmSet ? Icons.edit : Icons.add,
                     paddingHorizontal: 12,
                     iconTextSpacing: 0,
-                    isSecondary: _alarmSet ? true : false,
+                    backgroundColor: _alarmSet ? FancyButtonColor.grey : FancyButtonColor.blue,
                     onPressed: _pickTime,
                     label: '',
                     enabled: true,
@@ -236,13 +236,13 @@ class _AlarmWidgetState extends State<AlarmWidget> {
                 child: IntrinsicWidth(
                   stepHeight: 48,
                   stepWidth: 48,
-                  child: Button3D(
+                  child: FancyButton(
                     enabled: true,
                     onPressed: _resetAlarm,
                     leadingIcon: Icons.restore,
                     label: '',
                     paddingHorizontal: 0,
-                    isAlert: true,
+                    backgroundColor: FancyButtonColor.red,
                     iconTextSpacing: 0,
                   ),
                 ),

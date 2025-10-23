@@ -10,7 +10,7 @@ import 'package:timer/widgets/platform_constants.dart';
 /// - Semi-transparent background with blur effect
 /// - Subtle border and shadow
 /// - Smooth animations with customizable delay
-class GlassCard extends StatefulWidget {
+class FancyGlassCard extends StatefulWidget {
   /// The child widget to display inside the card
   final Widget child;
   
@@ -29,7 +29,7 @@ class GlassCard extends StatefulWidget {
   // Animation Duration
   final Duration animationDuration;
 
-  const GlassCard({
+  const FancyGlassCard({
     super.key,
     required this.child,
     this.delay = Duration.zero,
@@ -40,10 +40,10 @@ class GlassCard extends StatefulWidget {
   });
 
   @override
-  State<GlassCard> createState() => _GlassCardState();
+  State<FancyGlassCard> createState() => _FancyGlassCardState();
 }
 
-class _GlassCardState extends State<GlassCard> with SingleTickerProviderStateMixin {
+class _FancyGlassCardState extends State<FancyGlassCard> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;

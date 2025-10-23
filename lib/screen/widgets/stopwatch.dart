@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:timer/widgets/button3d.dart';
-import 'package:timer/widgets/glass_card.dart';
+import 'package:timer/widgets/fancy_button.dart';
+import 'package:timer/widgets/fancy_glasscard.dart';
 //import 'package:timer/screen/widgets/ticker.dart';
 
 /// Stopwatch Widget - Simple Stopwatch with Start, Stop, and Reset
@@ -115,7 +115,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
     final millis = (_elapsed.inMilliseconds % 1000).toString().padLeft(3, '0');
 
-    return GlassCard(
+    return FancyGlassCard(
       padding: const EdgeInsets.all(32.0),
       margin: const EdgeInsets.all(16.0),
       child: Stack(
@@ -162,7 +162,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
               ],
               SizedBox(height: 16),
               Center(
-                child: GlassCard(
+                child: FancyGlassCard(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Text(
                     '$hours:$minutes:$seconds.$millis',
@@ -178,9 +178,9 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
               IntrinsicWidth(
                 stepWidth: 60,
                 stepHeight: 60,
-                child: Button3D(
+                child: FancyButton(
                   enabled: true,
-                  isAlert: isRunning ? true : false,
+                  backgroundColor: isRunning ? FancyButtonColor.red : FancyButtonColor.green,
                   leadingIcon: isRunning ? Icons.stop : Icons.play_arrow,
                   paddingHorizontal: 12,
                   iconTextSpacing: 0,
@@ -199,13 +199,13 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
               child: IntrinsicWidth(
                 stepHeight: 48,
                 stepWidth: 48,
-                child: Button3D(
+                child: FancyButton(
                   enabled: true,
                   onPressed: _reset,
                   leadingIcon: Icons.restore,
                   label: '',
                   paddingHorizontal: 0,
-                  isAlert: true,
+                  backgroundColor: FancyButtonColor.red,
                   iconTextSpacing: 0,
                 ),
               ),
@@ -217,7 +217,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
               child: IntrinsicWidth(
                 stepHeight: 48,
                 stepWidth: 48,
-                child: Button3D(
+                child: FancyButton(
                   leadingIcon: Icons.timer,
                   paddingHorizontal: 0,
                   iconTextSpacing: 0,
@@ -237,7 +237,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                     });
                   },
                   enabled: true,
-                  isSecondary: true,
+                  backgroundColor: FancyButtonColor.orange,
                 ),
               ),
             ),
