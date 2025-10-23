@@ -12,12 +12,12 @@ class StopwatchWidget extends StatefulWidget {
   const StopwatchWidget({super.key});
 
   @override
-  State<StopwatchWidget> createState() => StopwatchWidgetState();
+  State<StopwatchWidget> createState() => _StopwatchWidgetState();
 }
 
 /// State class for StopwatchWidget
 /// Manages the stopwatch logic, UI updates, and user interactions.
-class StopwatchWidgetState extends State<StopwatchWidget> {
+class _StopwatchWidgetState extends State<StopwatchWidget> {
   // Liste der Zwischenzeiten
   final List<Duration> _splits = [];
   late final Stopwatch _stopwatch;

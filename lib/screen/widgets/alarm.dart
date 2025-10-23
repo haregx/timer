@@ -27,6 +27,13 @@ class AlarmWidget extends StatefulWidget {
 /// Uses a periodic timer to check if the current time matches the set alarm time,
 /// and triggers a notification and sound when the alarm goes off.
 class _AlarmWidgetState extends State<AlarmWidget> {
+  void _resetAlarm() {
+    setState(() {
+      _alarmSet = false;
+      _alarmTriggered = false;
+      _selectedTime = TimeOfDay.now();
+    });
+  }
   TimeOfDay _selectedTime = TimeOfDay.now();
   bool _alarmSet = false;
   Timer? _timer;
@@ -83,42 +90,62 @@ class _AlarmWidgetState extends State<AlarmWidget> {
     await showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          height: 300,
-          color: Colors.white,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 200,
-                child: CupertinoTimerPicker(
-                  mode: CupertinoTimerPickerMode.hm,
-                  initialTimerDuration: initialDuration,
-                  minuteInterval: 1,
-                  onTimerDurationChanged: (Duration newDuration) {
-                    pickedDuration = newDuration;
-                  },
+        return GestureDetector(
+          onVerticalDragStart: (_) {
+            okPressed = false;
+            Navigator.of(context).pop();
+          },
+          child: Container(
+            height: 330,
+            color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  CupertinoButton(
-                    child: const Text('Abbrechen'),
-                    onPressed: () {
-                      okPressed = false;
-                      Navigator.of(context).pop();
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 200,
+                  child: CupertinoTimerPicker(
+                    mode: CupertinoTimerPickerMode.hm,
+                    initialTimerDuration: initialDuration,
+                    minuteInterval: 1,
+                    onTimerDurationChanged: (Duration newDuration) {
+                      pickedDuration = newDuration;
                     },
                   ),
-                  CupertinoButton(
-                    child: const Text('OK'),
-                    onPressed: () {
-                      okPressed = true;
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
-            ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    CupertinoButton(
+                      child: const Text('Abbrechen'),
+                      onPressed: () {
+                        okPressed = false;
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    CupertinoButton(
+                      child: const Text('OK'),
+                      onPressed: () {
+                        okPressed = true;
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         );
       },
@@ -147,32 +174,54 @@ class _AlarmWidgetState extends State<AlarmWidget> {
       child: GlassCard(
         padding: const EdgeInsets.all(32.0),
         margin: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Center(
-              child: Text(
-                _alarmSet
-                    ? 'Alarm gesetzt für: ${_selectedTime.format(context)}'
-                    : 'Kein Alarm gesetzt',
-                style: const TextStyle(fontSize: 20),
-              ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Text(
+                    _alarmSet
+                        ? 'Alarm gesetzt für: ${_selectedTime.format(context)}'
+                        : 'Kein Alarm gesetzt',
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+                if (_alarmTriggered)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Center(child: Text('Alarm ausgelöst!', style: TextStyle(fontSize: 18, color: Colors.red))),
+                  ),
+                const SizedBox(height: 32),
+                IntrinsicWidth(
+                  stepHeight: 60,
+                  child: Button3D(
+                    onPressed: _pickTime,
+                    label: _alarmSet ? 'Alarm ändern' : 'Alarmzeit einstellen',
+                    enabled: true,
+                  ),
+                ),
+              ],
             ),
-            if (_alarmTriggered)
-              const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Center(child: Text('Alarm ausgelöst!', style: TextStyle(fontSize: 18, color: Colors.red))),
+            if (_alarmSet)
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: IntrinsicWidth(
+                  stepHeight: 48,
+                  stepWidth: 48,
+                  child: Button3D(
+                    enabled: true,
+                    onPressed: _resetAlarm,
+                    leadingIcon: Icons.restore,
+                    label: '',
+                    paddingHorizontal: 0,
+                    isAlert: true,
+                    iconTextSpacing: 0,
+                  ),
+                ),
               ),
-            const SizedBox(height: 32),
-            IntrinsicWidth(
-              stepHeight: 60,
-              child: Button3D(
-                onPressed: _pickTime,
-                label: 'Alarmzeit einstellen',
-                enabled: true,
-              ),
-            ),
           ],
         ),
       ),

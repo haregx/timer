@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -7,6 +6,7 @@ import 'package:timer/services/notification.dart';
 import 'package:timer/widgets/fancy_snackbar.dart';
 import 'package:timer/widgets/button3d.dart';
 import 'package:timer/widgets/glass_card.dart';
+import 'package:timer/widgets/fancy_picker.dart';
 //import 'package:timer/screen/widgets/ticker.dart';
 
 /// Timer Widget - Countdown Timer with Picker and Alerts
@@ -23,12 +23,14 @@ class TimerWidget extends StatefulWidget {
   final Duration initialTime;
 
   @override
-  State<TimerWidget> createState() => TimerWidgetState();
+  State<TimerWidget> createState() => _TimerWidgetState();
 }
 
 /// State class for TimerWidget
 /// Manages the timer logic, UI updates, and user interactions.
-class TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  
+ 
   late AnimationController _blinkController;
   late Animation<double> _blinkAnimation;
   //AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -282,106 +284,27 @@ class TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, S
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Column(
+                            children: List.generate(3, (i) {
+                              final labels = ['Std', 'Min', 'Sek'];
+                              final counts = [24, 60, 60];
+                              final controllers = [_hourController, _minuteController, _secondController];
+                              final onChanged = [
+                                (int v) => setState(() { _hours = v; _updateTimeFromFields(); }),
+                                (int v) => setState(() { _minutes = v; _updateTimeFromFields(); }),
+                                (int v) => setState(() { _seconds = v; _updateTimeFromFields(); }),
+                              ];
+                              return Row(
                                 children: [
-                                  const Text('Std'),
-                                  SizedBox(
-                                    height: 128,
-                                    width: 80,
-                                    child: CupertinoPicker(
-                                      looping: true,
-                                      itemExtent: 64,
-                                      scrollController: _hourController,
-                                      onSelectedItemChanged: (value) {
-                                        setState(() {
-                                          _hours = value;
-                                          _updateTimeFromFields();
-                                        });
-                                      },
-                                      children: List<Widget>.generate(
-                                        24,
-                                        (i) => Center(
-                                          child: Text(
-                                            i.toString(),
-                                            style: const TextStyle(
-                                              fontSize: 32,
-                                              fontFamily: 'Courier',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                  FancyPicker(
+                                    label: labels[i],
+                                    itemCount: counts[i],
+                                    controller: controllers[i],
+                                    onChanged: onChanged[i],
                                   ),
+                                  if (i < 2) const SizedBox(width: 4),
                                 ],
-                              ),
-                              const SizedBox(width: 4),
-                              Column(
-                                children: [
-                                  const Text('Min'),
-                                  SizedBox(
-                                    height: 128,
-                                    width: 80,
-                                    child: CupertinoPicker(
-                                      looping: true,
-                                      itemExtent: 64,
-                                      scrollController: _minuteController,
-                                      onSelectedItemChanged: (value) {
-                                        setState(() {
-                                          _minutes = value;
-                                          _updateTimeFromFields();
-                                        });
-                                      },
-                                      children: List<Widget>.generate(
-                                        60,
-                                        (i) => Center(
-                                          child: Text(
-                                            i.toString(),
-                                            style: const TextStyle(
-                                              fontSize: 32,
-                                              fontFamily: 'Courier',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 4),
-                              Column(
-                                children: [
-                                  const Text('Sek'),
-                                  SizedBox(
-                                    height: 128,
-                                    width: 80,
-                                    child: CupertinoPicker(
-                                      looping: true,
-                                      itemExtent: 64,
-                                      scrollController: _secondController,
-                                      onSelectedItemChanged: (value) {
-                                        setState(() {
-                                          _seconds = value;
-                                          _updateTimeFromFields();
-                                        });
-                                      },
-                                      children: List<Widget>.generate(
-                                        60,
-                                        (i) => Center(
-                                          child: Text(
-                                            i.toString(),
-                                            style: const TextStyle(
-                                              fontSize: 32,
-                                              fontFamily: 'Courier',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              );
+                            }),
                           ),
                         ),
                 ),
@@ -409,53 +332,37 @@ class TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, S
               right: 0,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Button3D(
-                    label: '+1m',
-                    onPressed: (_remaining.inSeconds + 60 < 86400)
-                        ? () {
-                            setState(() {
-                              _startTime += const Duration(minutes: 1);
-                              _remaining += const Duration(minutes: 1);
-                            });
-                          }
-                        : null,
-                    paddingHorizontal: 12,
-                    enabled: (_remaining.inSeconds + 60 < 86400),
-                    isSecondary: true,
-                  ),
-                  const SizedBox(width: 8),
-                  Button3D(
-                    label: '+10m',
-                    onPressed: (_remaining.inSeconds + 600 < 86400)
-                        ? () {
-                            setState(() {
-                              _startTime += const Duration(minutes: 10);
-                              _remaining += const Duration(minutes: 10);
-                            });
-                          }
-                        : null,
-                    paddingHorizontal: 12,
-                    enabled: (_remaining.inSeconds + 600 < 86400),
-                    isSecondary: true,
-                  ),
-                  const SizedBox(width: 8),
-                  Button3D(
-                    label: '+1h',
-                    onPressed:(_remaining.inSeconds + 3600 < 86400)
-                        ? () {
-                            setState(() {
-                              _startTime += const Duration(minutes: 60);
-                              _remaining += const Duration(minutes: 60);
-                            });
-                          }
-                        : null,
-                    paddingHorizontal: 12,
-                    enabled: (_remaining.inSeconds + 3600 < 86400),
-                    isSecondary: true,
-                  ),
-                  
-                ],
+                spacing: 8,
+                children: List.generate(4, (i) {
+                  final labels = ['+1m', '+10m', '+1h', '12h'];
+                  final increments = [60, 600, 3600, 43200];
+                  final durations = [
+                    const Duration(minutes: 1),
+                    const Duration(minutes: 10),
+                    const Duration(minutes: 60),
+                    const Duration(hours: 12),
+                  ];
+                  final canAdd = (_remaining.inSeconds + increments[i] < 86400); // 86400 seconds in a day
+                  return Row(
+                    children: [
+                      Button3D(
+                        label: labels[i],
+                        onPressed: canAdd
+                            ? () {
+                                setState(() {
+                                  _startTime += durations[i];
+                                  _remaining += durations[i];
+                                });
+                              }
+                            : null,
+                        paddingHorizontal: 12,
+                        enabled: canAdd,
+                        isSecondary: true,
+                      ),
+                      
+                    ],
+                  );
+                }),
               ),
             ),
         ],

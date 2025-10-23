@@ -21,11 +21,11 @@ class TimerScreen extends StatefulWidget {
 /// Manages the tab navigation and state of Timer and Stopwatch widgets.  
 class _TimerScreenState extends State<TimerScreen> {
 	int _selectedIndex = 0;
-	static final GlobalKey<StopwatchWidgetState> _stopwatchKey = GlobalKey<StopwatchWidgetState>();
-	static final GlobalKey<TimerWidgetState> _timerKey = GlobalKey<TimerWidgetState>();
+	//static final GlobalKey<StopwatchWidgetState> _stopwatchKey = GlobalKey<StopwatchWidgetState>();
+	//static final GlobalKey<TimerWidgetState> _timerKey = GlobalKey<TimerWidgetState>();
 	static final List<Widget> _screens = [
-		TimerWidget(key: _timerKey),
-		StopwatchWidget(key: _stopwatchKey),
+		const TimerWidget(),
+		const StopwatchWidget(),
 		const AlarmWidget(),
 	];
 
@@ -33,64 +33,10 @@ class _TimerScreenState extends State<TimerScreen> {
   /// Prompts the user for confirmation if switching tabs while a timer or stopwatch is running.
   /// Updates the selected index to switch between Timer and Stopwatch screens.
   /// 
-	void _onItemTapped(int index) async {
-		bool needsConfirmation = false;
-		if (_selectedIndex == 0 && _timerKey.currentState != null) {
-			needsConfirmation = false; // _timerKey.currentState!.isRunning;
-		} else if (_selectedIndex == 1 && _stopwatchKey.currentState != null) {
-			needsConfirmation = false; // _stopwatchKey.currentState!.isRunning;
-		}
-			if (index != _selectedIndex) {
-				if (needsConfirmation) {
-					bool? shouldSwitch;
-					if (Platform.isIOS || Platform.isMacOS) {
-						shouldSwitch = await showCupertinoDialog<bool>(
-							context: context,
-							builder: (context) => CupertinoAlertDialog(
-								title: const Text('Tab wechseln?'),
-								content: const Text('Der aktuelle Tab ist aktiv. Möchtest du wirklich wechseln?'),
-								actions: [
-									CupertinoDialogAction(
-										onPressed: () => Navigator.of(context).pop(false),
-										child: const Text('Nein'),
-									),
-									CupertinoDialogAction(
-										onPressed: () => Navigator.of(context).pop(true),
-										child: const Text('Ja'),
-									),
-								],
-							),
-						);
-					} else {
-						shouldSwitch = await showDialog<bool>(
-							context: context,
-							builder: (context) => AlertDialog(
-								title: const Text('Tab wechseln?'),
-								content: const Text('Der aktuelle Tab ist aktiv. Möchtest du wirklich wechseln?'),
-								actions: [
-									TextButton(
-										onPressed: () => Navigator.of(context).pop(false),
-										child: const Text('Nein'),
-									),
-									TextButton(
-										onPressed: () => Navigator.of(context).pop(true),
-										child: const Text('Ja'),
-									),
-								],
-							),
-						);
-					}
-					if (shouldSwitch == true) {
-						setState(() {
-							_selectedIndex = index;
-						});
-					}
-				} else {
-					setState(() {
-						_selectedIndex = index;
-					});
-				}
-			}
+	void _onItemTapped(int index) {
+    setState(() {
+        _selectedIndex = index;
+      });
 	}
 
   /// Builds the UI for the TimerScreen.
