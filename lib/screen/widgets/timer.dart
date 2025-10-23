@@ -312,14 +312,19 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
               const SizedBox(height: 32),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   IntrinsicWidth(
                     stepHeight: 60,
+                    stepWidth: 60,
                     child: Button3D(
+                      isAlert: isRunning ? true : false,
+                      leadingIcon: isRunning ? Icons.stop : Icons.play_arrow,
                       enabled: isRunning ? true : isStartEnabled,
                       onPressed: isRunning ? _stopTimer : (isStartEnabled ? _startTimer : null),
-                      label: isRunning ? 'Stopp' : 'Start',
+                      paddingHorizontal: 12,
+                      iconTextSpacing: 0,
+                      label: '',
                     ),
                   ),
                 ],

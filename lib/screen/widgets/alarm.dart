@@ -198,7 +198,7 @@ class _AlarmWidgetState extends State<AlarmWidget> {
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Center(
                   child: Text(
@@ -216,9 +216,14 @@ class _AlarmWidgetState extends State<AlarmWidget> {
                 const SizedBox(height: 32),
                 IntrinsicWidth(
                   stepHeight: 60,
+                  stepWidth: 60,
                   child: Button3D(
+                    leadingIcon: _alarmSet ? Icons.edit : Icons.add,
+                    paddingHorizontal: 12,
+                    iconTextSpacing: 0,
+                    isSecondary: _alarmSet ? true : false,
                     onPressed: _pickTime,
-                    label: _alarmSet ? 'Alarm ändern' : 'Alarm einstellen',
+                    label: '',
                     enabled: true,
                   ),
                 ),

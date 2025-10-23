@@ -122,7 +122,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (_splits.isNotEmpty) ...[
                 SizedBox(
@@ -176,16 +176,16 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
               ),
               const SizedBox(height: 32),
               IntrinsicWidth(
-                stepWidth: 100,
+                stepWidth: 60,
                 stepHeight: 60,
                 child: Button3D(
                   enabled: true,
+                  isAlert: isRunning ? true : false,
+                  leadingIcon: isRunning ? Icons.stop : Icons.play_arrow,
+                  paddingHorizontal: 12,
+                  iconTextSpacing: 0,
                   onPressed: isRunning ? _stop : _start,
-                  label: isRunning
-                      ? 'Stop'
-                      : _elapsed == Duration.zero
-                      ? 'Start'
-                      : 'Fortsetzen',
+                  label: ''
                 ),
               ),
             ],
