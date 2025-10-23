@@ -109,6 +109,8 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
   @override
   Widget build(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final hours = twoDigits(_elapsed.inHours.remainder(60));
     final minutes = twoDigits(_elapsed.inMinutes.remainder(60));
     final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
     final millis = (_elapsed.inMilliseconds % 1000).toString().padLeft(3, '0');
@@ -130,6 +132,7 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
                     itemCount: _splits.length,
                     itemBuilder: (context, idx) {
                       final d = _splits[idx];
+                      final hrs = twoDigits(d.inHours.remainder(60));
                       final min = twoDigits(d.inMinutes.remainder(60));
                       final sec = twoDigits(d.inSeconds.remainder(60));
                       final ms = (d.inMilliseconds % 1000).toString().padLeft(
@@ -137,16 +140,18 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
                         '0',
                       );
                       Duration diff = idx == 0 ? d : d - _splits[idx - 1];
+                      final diffHrs = twoDigits(diff.inHours.remainder(60));
                       final diffMin = twoDigits(diff.inMinutes.remainder(60));
                       final diffSec = twoDigits(diff.inSeconds.remainder(60));
                       final diffMs = (diff.inMilliseconds % 1000)
                           .toString()
                           .padLeft(3, '0');
                       return Text(
-                        '${idx + 1}: $min:$sec.$ms   (+$diffMin:$diffSec.$diffMs)',
+                        '${idx + 1}: $hrs:$min:$sec.$ms (+$diffHrs:$diffMin:$diffSec.$diffMs)',
                         style: const TextStyle(
                           fontSize: 16,
                           fontFamily: 'Courier',
+                          letterSpacing: -1.0,
                         ),
                       );
                     },
@@ -160,9 +165,9 @@ class StopwatchWidgetState extends State<StopwatchWidget> {
                 child: GlassCard(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Text(
-                    '$minutes:$seconds.$millis',
+                    '$hours:$minutes:$seconds.$millis',
                     style: const TextStyle(
-                      fontSize: 48,
+                      fontSize: 36,
                       fontFamily: 'Courier',
                       letterSpacing: -5.0,
                     ),

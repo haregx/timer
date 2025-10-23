@@ -101,7 +101,7 @@ class _AlarmWidgetState extends State<AlarmWidget> {
             if (_alarmTriggered)
               const Padding(
                 padding: EdgeInsets.only(top: 16),
-                child: Text('Alarm ausgelöst!', style: TextStyle(fontSize: 20, color: Colors.red)),
+                child: Center(child: Text('Alarm ausgelöst!', style: TextStyle(fontSize: 20, color: Colors.red))),
               ),
             const SizedBox(height: 32),
             IntrinsicWidth(
