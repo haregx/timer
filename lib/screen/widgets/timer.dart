@@ -278,7 +278,7 @@ class TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, S
                                 ),
                         )
                       : GlassCard(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -8,6 +8,8 @@ import 'dart:async';
 
 import 'package:timer/widgets/glass_card.dart';
 
+import 'package:flutter/cupertino.dart';
+
 /// AlarmWidget - Allows user to set an alarm time
 class AlarmWidget extends StatefulWidget {
   const AlarmWidget({super.key});
@@ -57,24 +59,62 @@ class _AlarmWidgetState extends State<AlarmWidget> {
   }
 
   void _pickTime() async {
-    final TimeOfDay? picked = await showTimePicker(
-      helpText: 'Alarmzeit auswählen',
-      hourLabelText: 'Stunde',
-      minuteLabelText: 'Minute',
-      confirmText: 'OK',
-      cancelText: 'Abbrechen',
+    Duration initialDuration = Duration(hours: _selectedTime.hour, minutes: _selectedTime.minute);
+    Duration? pickedDuration;
+    await showCupertinoModalPopup(
       context: context,
-      initialTime: _selectedTime,
+      builder: (BuildContext context) {
+        return Container(
+          height: 300,
+          color: Colors.white,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: CupertinoTimerPicker(
+                  mode: CupertinoTimerPickerMode.hm,
+                  initialTimerDuration: initialDuration,
+                  minuteInterval: 1,
+                  onTimerDurationChanged: (Duration newDuration) {
+                    pickedDuration = newDuration;
+                  },
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CupertinoButton(
+                    child: const Text('Abbrechen'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  CupertinoButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-        _alarmSet = true;
-        _alarmTriggered = false;
-      });
-      if (mounted) {
-        await scheduleAlarmNotification(context, picked, 'Alarm', 'Dieser Alarm wurde für ${picked.format(context)} eingestellt.');
-      }  
+    // Use pickedDuration if set, otherwise keep previous
+    if (pickedDuration != null) {
+      final picked = TimeOfDay(hour: pickedDuration!.inHours % 24, minute: pickedDuration!.inMinutes % 60);
+      if (picked != _selectedTime) {
+        setState(() {
+          _selectedTime = picked;
+          _alarmSet = true;
+          _alarmTriggered = false;
+        });
+        if (mounted) {
+          await scheduleAlarmNotification(context, picked, 'Alarm', 'Dieser Alarm wurde für ${picked.format(context)} eingestellt.');
+        }
+      }
     }
   }
 
@@ -95,13 +135,13 @@ class _AlarmWidgetState extends State<AlarmWidget> {
                 _alarmSet
                     ? 'Alarm gesetzt für: ${_selectedTime.format(context)}'
                     : 'Kein Alarm gesetzt',
-                style: const TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 20),
               ),
             ),
             if (_alarmTriggered)
               const Padding(
                 padding: EdgeInsets.only(top: 16),
-                child: Center(child: Text('Alarm ausgelöst!', style: TextStyle(fontSize: 20, color: Colors.red))),
+                child: Center(child: Text('Alarm ausgelöst!', style: TextStyle(fontSize: 18, color: Colors.red))),
               ),
             const SizedBox(height: 32),
             IntrinsicWidth(
