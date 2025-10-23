@@ -23,7 +23,7 @@ class _TimerScreenState extends State<TimerScreen> {
 	int _selectedIndex = 0;
 	//static final GlobalKey<StopwatchWidgetState> _stopwatchKey = GlobalKey<StopwatchWidgetState>();
 	//static final GlobalKey<TimerWidgetState> _timerKey = GlobalKey<TimerWidgetState>();
-	static final List<Widget> _screens = [
+	final List<Widget> _screens = [
 		const TimerWidget(),
 		const StopwatchWidget(),
 		const AlarmWidget(),
