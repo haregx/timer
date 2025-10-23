@@ -11,6 +11,10 @@ import 'package:timer/widgets/glass_card.dart';
 import 'package:flutter/cupertino.dart';
 
 /// AlarmWidget - Allows user to set an alarm time
+/// Provides functionality to:
+/// - Pick an alarm time using a Cupertino-style time picker
+/// - Set and display the alarm time
+/// - Trigger an alarm notification and sound when the set time is reached
 class AlarmWidget extends StatefulWidget {
   const AlarmWidget({super.key});
 
@@ -18,6 +22,10 @@ class AlarmWidget extends StatefulWidget {
   State<AlarmWidget> createState() => _AlarmWidgetState();
 }
 
+/// State class for AlarmWidget
+/// Manages the alarm time selection, setting, and triggering logic.  
+/// Uses a periodic timer to check if the current time matches the set alarm time,
+/// and triggers a notification and sound when the alarm goes off.
 class _AlarmWidgetState extends State<AlarmWidget> {
   TimeOfDay _selectedTime = TimeOfDay.now();
   bool _alarmSet = false;
@@ -25,12 +33,16 @@ class _AlarmWidgetState extends State<AlarmWidget> {
   bool _alarmTriggered = false;
 
 
+  ///  Initializes the periodic timer to check for alarm triggering.  
   @override
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), _checkAlarm);
   }
 
+  /// Disposes the timer.
+  /// This method is called when the widget is removed from the widget tree.
+  /// It ensures that all resources are released properly.
   @override
   void dispose() {
     _timer?.cancel();
@@ -38,6 +50,10 @@ class _AlarmWidgetState extends State<AlarmWidget> {
   }
 
 
+  /// Checks if the current time matches the set alarm time.
+  /// If the alarm is set and not yet triggered, it compares the current time
+  /// with the selected alarm time. If they match, it triggers the alarm sound
+  /// and displays a notification snackbar.
   void _checkAlarm(Timer timer) {
     if (!_alarmSet || _alarmTriggered) return;
     final now = TimeOfDay.now();
@@ -58,9 +74,12 @@ class _AlarmWidgetState extends State<AlarmWidget> {
     }
   }
 
+  /// Opens a Cupertino-style time picker to select the alarm time.
+  /// Updates the selected time and sets the alarm when the user confirms their choice.
   void _pickTime() async {
     Duration initialDuration = Duration(hours: _selectedTime.hour, minutes: _selectedTime.minute);
-    Duration? pickedDuration;
+    Duration pickedDuration = initialDuration;
+    bool okPressed = false;
     await showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) {
@@ -86,12 +105,14 @@ class _AlarmWidgetState extends State<AlarmWidget> {
                   CupertinoButton(
                     child: const Text('Abbrechen'),
                     onPressed: () {
+                      okPressed = false;
                       Navigator.of(context).pop();
                     },
                   ),
                   CupertinoButton(
                     child: const Text('OK'),
                     onPressed: () {
+                      okPressed = true;
                       Navigator.of(context).pop();
                     },
                   ),
@@ -102,24 +123,24 @@ class _AlarmWidgetState extends State<AlarmWidget> {
         );
       },
     );
-    // Use pickedDuration if set, otherwise keep previous
-    if (pickedDuration != null) {
-      final picked = TimeOfDay(hour: pickedDuration!.inHours % 24, minute: pickedDuration!.inMinutes % 60);
-      if (picked != _selectedTime) {
-        setState(() {
-          _selectedTime = picked;
-          _alarmSet = true;
-          _alarmTriggered = false;
-        });
-        if (mounted) {
-          await scheduleAlarmNotification(context, picked, 'Alarm', 'Dieser Alarm wurde für ${picked.format(context)} eingestellt.');
-        }
+    // Always update if OK was pressed
+    if (okPressed) {
+      final picked = TimeOfDay(hour: pickedDuration.inHours % 24, minute: pickedDuration.inMinutes % 60);
+      setState(() {
+        _selectedTime = picked;
+        _alarmSet = true;
+        _alarmTriggered = false;
+      });
+      if (mounted) {
+        await scheduleAlarmNotification(context, picked, 'Alarm', 'Dieser Alarm wurde für ${picked.format(context)} eingestellt.');
       }
     }
   }
 
   
 
+  /// Builds the UI for the AlarmWidget.
+  /// Displays the current alarm status and a button to set the alarm time.
   @override
   Widget build(BuildContext context) {
     return Center(
