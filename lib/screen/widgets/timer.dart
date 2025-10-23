@@ -301,7 +301,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                                     controller: controllers[i],
                                     onChanged: onChanged[i],
                                   ),
-                                  if (i < 2) const SizedBox(width: 4),
+                                // if (i < 3) const SizedBox(width: 4),
                                 ],
                               );
                             }),

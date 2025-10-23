@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:timer/widgets/glass_card.dart';
 
 import 'package:flutter/cupertino.dart';
+import 'package:timer/widgets/fancy_picker.dart';
 
 /// AlarmWidget - Allows user to set an alarm time
 /// Provides functionality to:
@@ -84,75 +85,94 @@ class _AlarmWidgetState extends State<AlarmWidget> {
   /// Opens a Cupertino-style time picker to select the alarm time.
   /// Updates the selected time and sets the alarm when the user confirms their choice.
   void _pickTime() async {
-    Duration initialDuration = Duration(hours: _selectedTime.hour, minutes: _selectedTime.minute);
-    Duration pickedDuration = initialDuration;
+    int selectedHour = _selectedTime.hour;
+    int selectedMinute = _selectedTime.minute;
     bool okPressed = false;
-    await showCupertinoModalPopup(
+    await showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return GestureDetector(
-          onVerticalDragStart: (_) {
-            okPressed = false;
-            Navigator.of(context).pop();
-          },
-          child: Container(
-            height: 330,
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             color: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
+          ),
+          height: 350,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 200,
-                  child: CupertinoTimerPicker(
-                    mode: CupertinoTimerPickerMode.hm,
-                    initialTimerDuration: initialDuration,
-                    minuteInterval: 1,
-                    onTimerDurationChanged: (Duration newDuration) {
-                      pickedDuration = newDuration;
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 220,
+                child: GlassCard(
+                  margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: List.generate(2, (i) {
+                      final labels = ['Std', 'Min'];
+                      final counts = [24, 60];
+                      final controllers = [
+                        FixedExtentScrollController(initialItem: selectedHour),
+                        FixedExtentScrollController(initialItem: selectedMinute),
+                      ];
+                      final onChanged = [
+                        (int v) => selectedHour = v,
+                        (int v) => selectedMinute = v,
+                      ];
+                      return Row(
+                        children: [
+                          FancyPicker(
+                            label: labels[i],
+                            itemCount: counts[i],
+                            controller: controllers[i],
+                            onChanged: onChanged[i],
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CupertinoButton(
+                    child: const Text('Abbrechen'),
+                    onPressed: () {
+                      okPressed = false;
+                      Navigator.of(context).pop();
                     },
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CupertinoButton(
-                      child: const Text('Abbrechen'),
-                      onPressed: () {
-                        okPressed = false;
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    CupertinoButton(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        okPressed = true;
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
+                  CupertinoButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      okPressed = true;
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         );
       },
     );
-    // Always update if OK was pressed
     if (okPressed) {
-      final picked = TimeOfDay(hour: pickedDuration.inHours % 24, minute: pickedDuration.inMinutes % 60);
+      final picked = TimeOfDay(hour: selectedHour, minute: selectedMinute);
       setState(() {
         _selectedTime = picked;
         _alarmSet = true;
@@ -198,7 +218,7 @@ class _AlarmWidgetState extends State<AlarmWidget> {
                   stepHeight: 60,
                   child: Button3D(
                     onPressed: _pickTime,
-                    label: _alarmSet ? 'Alarm ändern' : 'Alarmzeit einstellen',
+                    label: _alarmSet ? 'Alarm ändern' : 'Alarm einstellen',
                     enabled: true,
                   ),
                 ),
