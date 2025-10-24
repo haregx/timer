@@ -112,11 +112,12 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
   @override
   Widget build(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String threeDigits(int n) => n.toString().padLeft(3, '0');
 
-    final hours = twoDigits(_elapsed.inHours.remainder(60));
+    final hours = twoDigits(_elapsed.inHours);
     final minutes = twoDigits(_elapsed.inMinutes.remainder(60));
     final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
-    final millis = (_elapsed.inMilliseconds % 1000).toString().padLeft(3, '0');
+    final millis = threeDigits(_elapsed.inMilliseconds % 1000);
 
     return FancyGlassCard(
       padding: const EdgeInsets.all(32.0),
@@ -135,20 +136,15 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                     itemCount: _splits.length,
                     itemBuilder: (context, idx) {
                       final d = _splits[idx];
-                      final hrs = twoDigits(d.inHours.remainder(60));
-                      final min = twoDigits(d.inMinutes.remainder(60));
+                      final hrs = twoDigits(d.inHours);
+                      final min = twoDigits(d.inMinutes.remainder( 60));
                       final sec = twoDigits(d.inSeconds.remainder(60));
-                      final ms = (d.inMilliseconds % 1000).toString().padLeft(
-                        3,
-                        '0',
-                      );
+                      final ms = threeDigits(d.inMilliseconds % 1000);
                       Duration diff = idx == 0 ? d : d - _splits[idx - 1];
-                      final diffHrs = twoDigits(diff.inHours.remainder(60));
+                      final diffHrs = twoDigits(diff.inHours);
                       final diffMin = twoDigits(diff.inMinutes.remainder(60));
                       final diffSec = twoDigits(diff.inSeconds.remainder(60));
-                      final diffMs = (diff.inMilliseconds % 1000)
-                          .toString()
-                          .padLeft(3, '0');
+                      final diffMs = threeDigits(diff.inMilliseconds % 1000);
                       return Text(
                         '${idx + 1}: $hrs:$min:$sec.$ms (+$diffHrs:$diffMin:$diffSec.$diffMs)',
                         style: TextStyle(

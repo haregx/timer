@@ -331,12 +331,14 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                 children: List.generate(4, (i) {
                   final labels = ['+1m', '+10m', '+1h', '+12h'];
                   final increments = [60, 600, 3600, 43200];
+                  /*
                   final durations = [
                     const Duration(minutes: 1),
                     const Duration(minutes: 10),
                     const Duration(minutes: 60),
                     const Duration(hours: 12),
                   ];
+                  */
                   final canAdd = (_remaining.inSeconds + increments[i] < 86400); // 86400 seconds in a day
                   return Row(
                     children: [
@@ -345,8 +347,8 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                         onPressed: canAdd
                             ? () {
                                 setState(() {
-                                  _startTime += durations[i];
-                                  _remaining += durations[i];
+                                  _startTime += Duration(seconds: increments[i]);
+                                  _remaining += Duration(seconds: increments[i]);
                                 });
                               }
                             : null,
