@@ -1,13 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:timer/services/notification.dart';
 import 'package:timer/widgets/fancy_snackbar.dart';
 import 'package:timer/widgets/fancy_button.dart';
 import 'package:timer/widgets/fancy_glasscard.dart';
 import 'package:timer/widgets/fancy_picker.dart';
-//import 'package:timer/screen/widgets/ticker.dart';
+
 
 /// Timer Widget - Countdown Timer with Picker and Alerts
 /// Provides a countdown timer with:
@@ -29,7 +27,6 @@ class TimerWidget extends StatefulWidget {
 /// State class for TimerWidget
 /// Manages the timer logic, UI updates, and user interactions.
 class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
-  
  
   late AnimationController _blinkController;
   late Animation<double> _blinkAnimation;
@@ -46,6 +43,10 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
   bool showPicker = true;
   Duration _startTime = Duration.zero;
 
+  /// Initializes the timer and sets up the controllers.
+  /// This method is called when the widget is created.
+  /// It sets the initial values for the hour, minute, and second controllers.
+  /// It also initializes the blink animation.
   @override
   void initState() {
     _blinkController = AnimationController(
@@ -70,6 +71,22 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
     _hourController = FixedExtentScrollController(initialItem: _hours);
     _minuteController = FixedExtentScrollController(initialItem: _minutes);
     _secondController = FixedExtentScrollController(initialItem: _seconds);
+  }
+
+/// Disposes the controllers and ticker.
+  /// This method is called when the widget is removed from the widget tree.
+  /// It ensures that all resources are released properly.
+  ///   - Disposes the minute and second controllers.
+  ///   - Disposes the ticker.
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _blinkController.dispose();
+    _hourController.dispose();
+    _minuteController.dispose();
+    _secondController.dispose();
+    _ticker.dispose();
+    super.dispose();
   }
 
   /// Updates the start time and remaining time based on the selected minutes and seconds.
@@ -98,10 +115,6 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
         final newRemaining = _startTime - elapsed;
         if (newRemaining.inSeconds > 0) {
           // Sekunden-Ping bei < 10 Sekunden
-          if (newRemaining.inSeconds < 10 && newRemaining.inSeconds != _remaining.inSeconds) {
-             final player = AudioPlayer();
-             await player.play(AssetSource('ping.wav'), volume: 0.1);
-          }
           setState(() {
             _remaining = newRemaining;
           });
@@ -109,13 +122,8 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
           _remaining = Duration.zero;
           isRunning = false;
           _ticker.stop();
-          FlutterRingtonePlayer().playAlarm();
           // TODO alert notification
 
-        /*  final now = DateTime.now().add(const Duration(seconds: 5));
-          final delayedTime = TimeOfDay(hour: now.hour, minute: now.minute);
-          scheduleAlarmNotification(context, delayedTime, 'Timer beendet', 'Der Timer für $_minutes:$_seconds ist abgelaufen.');
-*/
           setState(() {
             showPicker = true;
             _hours = 0;
@@ -150,17 +158,11 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
   void _startTimer() async {
     if (!isRunning) {
       setState(() {
-        showPicker = false; // Nach Start wieder Anzeige
+        showPicker = false;
         isRunning = true;
         Future.delayed(Duration(milliseconds: 500), _ticker.start);
         debugPrint('(Re-)start timer)');
       });
-      if (mounted) {
-        final now = DateTime.now().add(_remaining);
-        final delayedTime = TimeOfDay(hour: now.hour, minute: now.minute);
-        String twoDigits(int n) => n.toString().padLeft(2, '0');
-        await scheduleAlarmNotification(context, delayedTime, 'Timer beendet', 'Der Timer für ${twoDigits(_hours)}:${twoDigits(_minutes)}:${twoDigits(_seconds)} ist abgelaufen.');
-      }
     }
   }
 
@@ -186,21 +188,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
     }
   }
 
-  /// Disposes the controllers and ticker.
-  /// This method is called when the widget is removed from the widget tree.
-  /// It ensures that all resources are released properly.
-  ///   - Disposes the minute and second controllers.
-  ///   - Disposes the ticker.
-  @override
-  void dispose() {
-  _blinkController.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-    _hourController.dispose();
-    _minuteController.dispose();
-    _secondController.dispose();
-    _ticker.dispose();
-    super.dispose();
-  }
+  
 
 /*
   @override
@@ -263,9 +251,9 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                                     '$hours:$minutes:$seconds',
                                     style: TextStyle(
                                       fontSize: 48,
-                                      fontFamily: 'Courier',
+                                      fontFamily: Theme.of(context).platform == TargetPlatform.iOS ? 'Courier' : 'RobotoMono',
                                       color: timerColor,
-                                      letterSpacing: -5.0,
+                                      letterSpacing: Theme.of(context).platform == TargetPlatform.iOS ? -5.0 : null,
                                     ),
                                   ),
                                 )
@@ -273,9 +261,9 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                                   '$hours:$minutes:$seconds',
                                   style: TextStyle(
                                     fontSize: 48,
-                                    fontFamily: 'Courier',
+                                    fontFamily: Theme.of(context).platform == TargetPlatform.iOS ? 'Courier' : 'RobotoMono',
                                     color: timerColor,
-                                    letterSpacing: -5.0,
+                                    letterSpacing: Theme.of(context).platform == TargetPlatform.iOS ? -5.0 : null,
                                   ),
                                 ),
                         )
@@ -341,7 +329,7 @@ class _TimerWidgetState extends State<TimerWidget> with WidgetsBindingObserver, 
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 8,
                 children: List.generate(4, (i) {
-                  final labels = ['+1m', '+10m', '+1h', '12h'];
+                  final labels = ['+1m', '+10m', '+1h', '+12h'];
                   final increments = [60, 600, 3600, 43200];
                   final durations = [
                     const Duration(minutes: 1),

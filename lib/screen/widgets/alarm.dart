@@ -1,8 +1,7 @@
-import 'package:timer/services/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:timer/widgets/fancy_button.dart';
 import 'package:timer/widgets/fancy_snackbar.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+
 
 import 'dart:async';
 
@@ -27,7 +26,22 @@ class AlarmWidget extends StatefulWidget {
 /// Manages the alarm time selection, setting, and triggering logic.  
 /// Uses a periodic timer to check if the current time matches the set alarm time,
 /// and triggers a notification and sound when the alarm goes off.
-class _AlarmWidgetState extends State<AlarmWidget> {
+class _AlarmWidgetState extends State<AlarmWidget> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _timer = Timer.periodic(const Duration(seconds: 1), _checkAlarm);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    super.dispose();
+  }
+
   void _resetAlarm() {
     setState(() {
       _alarmSet = false;
@@ -41,23 +55,6 @@ class _AlarmWidgetState extends State<AlarmWidget> {
   bool _alarmTriggered = false;
 
 
-  ///  Initializes the periodic timer to check for alarm triggering.  
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), _checkAlarm);
-  }
-
-  /// Disposes the timer.
-  /// This method is called when the widget is removed from the widget tree.
-  /// It ensures that all resources are released properly.
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-
   /// Checks if the current time matches the set alarm time.
   /// If the alarm is set and not yet triggered, it compares the current time
   /// with the selected alarm time. If they match, it triggers the alarm sound
@@ -69,7 +66,6 @@ class _AlarmWidgetState extends State<AlarmWidget> {
       setState(() {
         _alarmTriggered = true;
       });
-      FlutterRingtonePlayer().playAlarm();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final contextToUse = context;
         ScaffoldMessenger.of(contextToUse).showSnackBar(
@@ -178,14 +174,10 @@ class _AlarmWidgetState extends State<AlarmWidget> {
         _alarmSet = true;
         _alarmTriggered = false;
       });
-      if (mounted) {
-        await scheduleAlarmNotification(context, picked, 'Alarm', 'Dieser Alarm wurde für ${picked.format(context)} eingestellt.');
-      }
     }
   }
 
-  
-
+ 
   /// Builds the UI for the AlarmWidget.
   /// Displays the current alarm status and a button to set the alarm time.
   @override

@@ -35,7 +35,7 @@ class FancyPicker extends StatelessWidget {
                   i.toString().padLeft(2, '0'),
                   style: const TextStyle(
                     fontSize: 32,
-                    fontFamily: 'Courier',
+                    fontFamily: 'RobotoMono',
                   ),
                 ),
               ),

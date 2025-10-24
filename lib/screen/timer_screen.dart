@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'dart:io';
 import 'widgets/timer.dart';
 import 'widgets/stopwatch.dart';
 import 'widgets/alarm.dart';
@@ -60,6 +58,7 @@ class _TimerScreenState extends State<TimerScreen> {
 			return Scaffold(
 				appBar: AppBar(
 					title: Text(appBarTitle),
+          centerTitle: true,
 				),
 				body: IndexedStack(
 					index: _selectedIndex,

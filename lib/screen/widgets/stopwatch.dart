@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:timer/widgets/fancy_button.dart';
@@ -94,6 +96,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     super.dispose();
   }
 
+  
   /// Builds the UI for the StopwatchWidget.
   /// Displays the elapsed time and control buttons.
   /// The UI consists of a GlassCard containing:
@@ -148,10 +151,10 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                           .padLeft(3, '0');
                       return Text(
                         '${idx + 1}: $hrs:$min:$sec.$ms (+$diffHrs:$diffMin:$diffSec.$diffMs)',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontFamily: 'Courier',
-                          letterSpacing: -1.0,
+                          fontFamily: Platform.isIOS ? 'Courier' : 'RobotoMono',
+                          letterSpacing: Platform.isIOS ? -1.0 : 0.0,
                         ),
                       );
                     },
@@ -166,10 +169,10 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Text(
                     '$hours:$minutes:$seconds.$millis',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 36,
-                      fontFamily: 'Courier',
-                      letterSpacing: -5.0,
+                      fontFamily: Platform.isIOS ? 'Courier' : 'RobotoMono',
+                      letterSpacing: Platform.isIOS ? -5.0 : 0.0,
                     ),
                   ),
                 ),
